@@ -281,12 +281,24 @@ export const relationship: RelationshipContent = {
     subtitle: "Three songs that live in this story. Press play only if you want to.",
     defaultVolume: 0.35,
     tracks: [
-      // MOHAN: set the real artist names, and drop the matching audio files
-      // into /public/music — khat.mp3, faasle.mp3, alfaaz.mp3.
-      // Only use music you have the rights to use.
-      { id: "khat", title: "Khat", artist: "", src: "/music/khat.mp3" },
-      { id: "faasle", title: "Faasle", artist: "", src: "/music/faasle.mp3" },
-      { id: "alfaaz", title: "Alfaaz", artist: "", src: "/music/alfaaz.mp3" },
+      {
+        id: "khat",
+        title: "Khat",
+        artist: "Navjot Ahuja",
+        src: "https://ik.imagekit.io/Myimage/Navjot%20Ahuja%20-%20Khat%20(Official%20Audio).mp3",
+      },
+      {
+        id: "faasle",
+        title: "Faasle",
+        artist: "Kaavish & Quratulain Balouch — Coke Studio Season 10",
+        src: "https://ik.imagekit.io/Myimage/Coke%20Studio%20Season%2010%20Faasle%20Kaavish%20&%20Quratulain%20Balouch.mp3",
+      },
+      {
+        id: "alfaaz",
+        title: "Alfaaz",
+        artist: "Hamza Malik, Zain Ali",
+        src: "https://ik.imagekit.io/Myimage/Alfaaz%20-%20Hamza%20Malik,%20Zain%20Ali%20Lyrics.mp3",
+      },
     ],
   },
 
