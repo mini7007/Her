@@ -8,6 +8,7 @@ import { MusicToggleButton } from "@/components/layout/MusicToggleButton";
 import { LoadingVeil } from "@/components/layout/LoadingVeil";
 import { AmbientBackground } from "@/components/layout/AmbientBackground";
 import { FilmGrain } from "@/components/layout/FilmGrain";
+import { ApologyWhispers } from "@/components/layout/ApologyWhispers";
 import { ProgressRail, SceneNavigation, type SceneNavEntry } from "@/components/layout/SceneNavigation";
 import { OpeningScene } from "@/components/scenes/OpeningScene";
 import { OurStoryScene } from "@/components/scenes/OurStoryScene";
@@ -94,6 +95,7 @@ export function ExperienceShell() {
       <MusicProvider>
         <LoadingVeil />
         <AmbientBackground scene={scene} />
+        <ApologyWhispers />
         <FilmGrain />
         <MusicToggleButton />
 

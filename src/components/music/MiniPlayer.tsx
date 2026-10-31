@@ -10,7 +10,7 @@ import { useMusic } from "@/components/music/MusicProvider";
  * Tap the title to jump to "Our Songs".
  */
 export function MiniPlayer({ onOpenMusic }: { onOpenMusic: () => void }) {
-  const { currentTrack, playing, togglePlay, next, started } = useMusic();
+  const { currentTrack, playing, togglePlay, next, started, needsUnlock } = useMusic();
 
   if (!started) return null;
 
@@ -40,7 +40,7 @@ export function MiniPlayer({ onOpenMusic }: { onOpenMusic: () => void }) {
           aria-label={`Now playing: ${currentTrack.title}. Open Our Songs.`}
         >
           <span className="block text-[10px] uppercase tracking-[0.2em] text-rose/60">
-            {playing ? "Now playing" : "Paused"}
+            {needsUnlock ? "Tap anywhere for music" : playing ? "Now playing" : "Paused"}
           </span>
           <span className="block truncate font-serif text-sm text-ivory">
             {currentTrack.title}

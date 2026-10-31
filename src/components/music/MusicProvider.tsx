@@ -39,7 +39,14 @@ interface MusicContextValue {
   repeat: RepeatMode;
   /** Error for the current track, e.g. missing file. */
   trackError: string | null;
+  /**
+   * True when the browser blocked audible autoplay and music is waiting for
+   * her first touch anywhere (playing muted in the meantime, if allowed).
+   */
+  needsUnlock: boolean;
   start: () => void;
+  /** Unmute/resume immediately (used by controls; also a gesture handler). */
+  unlockNow: () => void;
   togglePlay: () => void;
   next: () => void;
   previous: () => void;
@@ -73,6 +80,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [repeat, setRepeat] = useState<RepeatMode>("off");
   const [trackError, setTrackError] = useState<string | null>(null);
+  const [needsUnlock, setNeedsUnlock] = useState(false);
+  /** True only when SHE paused via a control — auto-unlock must respect it. */
+  const userPausedRef = useRef(false);
 
   // Restore persisted preferences (never auto-resume playback itself).
   useEffect(() => {
@@ -105,19 +115,103 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const start = useCallback(() => {
     setStarted(true);
     setTrackError(null);
+    userPausedRef.current = false;
     // Defer until after the <audio src> mount/commit — requestAnimationFrame
     // ensures the element exists with the right source.
     requestAnimationFrame(() => playCurrent());
+  }, [playCurrent]);
+
+  /**
+   * Landing autoplay + graceful unlock.
+   *
+   * Browsers block audible autoplay without a user gesture, so:
+   *   1. Try to play with sound immediately (works when the browser allows).
+   *   2. If blocked, start MUTED (usually allowed) — she hears nothing yet.
+   *   3. The first touch/keypress anywhere on the page unmutes instantly,
+   *      so to her it feels like the music simply began when she arrived.
+   * If she paused via a control herself, auto-unlock never overrides it.
+   */
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    setStarted(true);
+    audio.play().then(() => {
+      setPlaying(true);
+    }).catch((err: unknown) => {
+      if (!(err instanceof DOMException) || err.name !== "NotAllowedError") {
+        setPlaying(false); // surfaced as a track error where relevant
+        return;
+      }
+      // Audible autoplay blocked — try muted playback instead.
+      audio.muted = true;
+      audio.play().then(() => {
+        setMuted(true);
+        setNeedsUnlock(true);
+        setPlaying(true);
+      }).catch(() => {
+        setPlaying(false);
+        setNeedsUnlock(true); // even muted playback failed — first tap starts it
+      });
+    });
+  }, []);
+
+  // First-gesture unlock: any tap/keypress anywhere (except the music
+  // control itself, which manages its own behavior).
+  useEffect(() => {
+    if (!needsUnlock) return;
+
+    const unlock = () => {
+      const audio = audioRef.current;
+      setNeedsUnlock(false);
+      if (!audio || userPausedRef.current) return;
+      if (audio.paused) {
+        audio.play().catch(() => setPlaying(false));
+      } else {
+        audio.muted = false;
+        setMuted(false);
+      }
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+
+    const guardedUnlock = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.("[data-music-control]")) return; // its own click handler decides
+      unlock();
+    };
+
+    window.addEventListener("pointerdown", guardedUnlock);
+    window.addEventListener("touchstart", guardedUnlock, { passive: true });
+    window.addEventListener("keydown", guardedUnlock);
+    return () => {
+      window.removeEventListener("pointerdown", guardedUnlock);
+      window.removeEventListener("touchstart", guardedUnlock);
+      window.removeEventListener("keydown", guardedUnlock);
+    };
+  }, [needsUnlock]);
+
+  const unlockNow = useCallback(() => {
+    const audio = audioRef.current;
+    setNeedsUnlock(false);
+    userPausedRef.current = false;
+    if (!audio) return;
+    audio.muted = false;
+    setMuted(false);
+    if (audio.paused) playCurrent();
   }, [playCurrent]);
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
     if (playing) {
+      userPausedRef.current = true;
       audio.pause();
       setPlaying(false);
     } else {
       setStarted(true);
+      userPausedRef.current = false;
       playCurrent();
     }
   }, [playing, playCurrent]);
@@ -234,7 +328,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       duration,
       repeat,
       trackError,
+      needsUnlock,
       start,
+      unlockNow,
       togglePlay,
       next,
       previous,
@@ -255,7 +351,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       duration,
       repeat,
       trackError,
+      needsUnlock,
       start,
+      unlockNow,
       togglePlay,
       next,
       previous,

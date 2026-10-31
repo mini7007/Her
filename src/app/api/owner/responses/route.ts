@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     .order("submitted_at", { ascending: false })
     .limit(500);
 
-  if (responseFilter === "yes" || responseFilter === "time" || responseFilter === "talk" || responseFilter === "no") {
+  if (responseFilter === "yes" || responseFilter === "time" || responseFilter === "talk" || responseFilter === "no" || responseFilter === "message") {
     query = query.eq("response", responseFilter);
   }
   if (statusFilter === "read" || statusFilter === "unread") {

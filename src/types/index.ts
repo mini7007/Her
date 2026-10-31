@@ -128,6 +128,11 @@ export interface RelationshipContent {
     writeMoreLabel: string;
     acknowledgementByResponse: Record<ResponseValue, string>;
   };
+  /**
+   * Short handwritten thoughts that drift faintly across every scene.
+   * Editable; empty array disables the effect.
+   */
+  whispers: string[];
   notification: {
     subject: string;
     ownerDashboardPath: string;

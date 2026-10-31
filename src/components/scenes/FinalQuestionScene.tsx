@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Loader2, Send, SkipForward, Sparkles, Heart } from "lucide-react";
+import { Loader2, Send, SkipForward, Sparkles, Heart, PenLine } from "lucide-react";
 import { SceneHeader } from "@/components/layout/SceneHeader";
 import { relationship } from "@/content/relationship";
 import { useClientToken } from "@/hooks/useClientToken";
@@ -12,13 +12,15 @@ import { cn } from "@/lib/utils";
 /**
  * SCENE 08 — "The Quiet Final Question".
  *
- * Four equally prominent, equally respectful options. No countdowns, no fake
- * success animations, no guilt, no repeated prompts — and never any visual
- * pressure toward one answer. She submits only when SHE chooses to; the
- * response is stored once, and she may intentionally return and respond again.
+ * Four equally prominent, equally respectful options — AND a free space to
+ * simply write what's in her heart, with no option required at all. No
+ * countdowns, no fake success animations, no guilt, no repeated prompts, and
+ * never any visual pressure toward one answer. She submits only when SHE
+ * chooses to; the response is stored once, and she may intentionally return
+ * and respond again.
  */
 
-type Phase = "choosing" | "composing" | "sending" | "done";
+type Phase = "composing" | "sending" | "done";
 
 interface SubmitResult {
   ok: boolean;
@@ -31,13 +33,17 @@ export function FinalQuestionScene() {
   const { heading, paragraphs, question, options, messagePrompt, messageMaxLength, sendLabel, skipMessageLabel, thankYou, writeMoreLabel, acknowledgementByResponse } =
     relationship.final;
 
-  const [phase, setPhase] = useState<Phase>("choosing");
+  const [phase, setPhase] = useState<Phase>("composing");
   const [choice, setChoice] = useState<ResponseValue | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [finalResponse, setFinalResponse] = useState<ResponseValue | null>(null);
   const [honeypot, setHoneypot] = useState("");
   const { token, rotateToken } = useClientToken();
+
+  const trimmed = message.trim();
+  const canSend = choice !== null || trimmed.length > 0;
+  const canSkip = choice !== null && trimmed.length === 0;
 
   const appear = (delay: number) =>
     reduced
@@ -50,7 +56,16 @@ export function FinalQuestionScene() {
         };
 
   async function submit(withMessage: boolean) {
-    if (!choice || phase === "sending") return;
+    if (phase === "sending") return;
+    if (!canSend && !withMessage) return;
+
+    // "Send" carries the message when she wrote one; "Skip" sends the choice alone.
+    const outgoingMessage = withMessage && trimmed.length > 0 ? trimmed : null;
+    if (!choice && (!outgoingMessage || outgoingMessage.length === 0)) {
+      setError("Write what's in your heart — or choose one of the four options. Either is welcome.");
+      return;
+    }
+
     setPhase("sending");
     setError(null);
 
@@ -59,8 +74,8 @@ export function FinalQuestionScene() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          response: choice,
-          message: withMessage && message.trim().length > 0 ? message.trim() : null,
+          response: choice ?? "message",
+          message: outgoingMessage,
           clientToken: token || null,
           [HONEYPOT_FIELD]: honeypot,
         }),
@@ -73,7 +88,7 @@ export function FinalQuestionScene() {
         return;
       }
 
-      setFinalResponse(choice);
+      setFinalResponse(choice ?? "message");
       setPhase("done");
     } catch {
       setError(
@@ -89,7 +104,7 @@ export function FinalQuestionScene() {
     setMessage("");
     setError(null);
     setFinalResponse(null);
-    setPhase("choosing");
+    setPhase("composing");
   }
 
   const acknowledge = finalResponse ? acknowledgementByResponse[finalResponse] : null;
@@ -181,10 +196,7 @@ export function FinalQuestionScene() {
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  onClick={() => {
-                    setChoice(option.value);
-                    setPhase("composing");
-                  }}
+                  onClick={() => setChoice(choice === option.value ? null : option.value)}
                   className={cn(
                     "rounded-2xl border px-5 py-5 text-left transition-all duration-300",
                     selected
@@ -203,73 +215,72 @@ export function FinalQuestionScene() {
             })}
           </motion.div>
 
-          {/* Optional message + send */}
-          {phase === "composing" || phase === "sending" ? (
-            <motion.div
-              initial={reduced ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-8 rounded-3xl border border-rose/15 bg-burgundy/40 p-6 sm:p-8"
-            >
-              <p className="text-center font-hand text-2xl text-rose/85">{messagePrompt}</p>
+          {/* Free space — always here, with or without an option */}
+          <motion.div
+            {...appear(0.6)}
+            className="mt-8 rounded-3xl border border-rose/15 bg-burgundy/40 p-6 sm:p-8"
+          >
+            <p className="text-center font-hand text-2xl text-rose/85">{messagePrompt}</p>
 
-              <div className="mt-6">
-                <label htmlFor="final-message" className="sr-only">
-                  Your message (optional, up to {messageMaxLength} characters)
-                </label>
-                <textarea
-                  id="final-message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value.slice(0, messageMaxLength))}
-                  maxLength={messageMaxLength}
-                  rows={5}
-                  placeholder="Only if you want to. There is no obligation to write anything."
-                  className="w-full resize-y rounded-2xl border border-rose/20 bg-midnight/70 px-4 py-3.5 text-base font-light leading-relaxed text-ivory placeholder:text-ivory/30 focus:border-champagne/50 focus:outline-none"
-                />
-                <div className="mt-2 flex items-center justify-between">
-                  <p aria-hidden className="text-[11px] uppercase tracking-[0.25em] text-ivory/35">
-                    {choice ? options.find((o) => o.value === choice)?.label : ""}
-                  </p>
-                  <p className="text-[11px] tabular-nums text-ivory/35">
-                    {message.length}/{messageMaxLength}
-                  </p>
-                </div>
-              </div>
-
-              {/* Honeypot — visually removed, ignored by humans, traps bots */}
-              <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
-                <label htmlFor={HONEYPOT_FIELD}>Leave this field empty</label>
-                <input
-                  id={HONEYPOT_FIELD}
-                  type="text"
-                  name={HONEYPOT_FIELD}
-                  value={honeypot}
-                  onChange={(e) => setHoneypot(e.target.value)}
-                  tabIndex={-1}
-                  autoComplete="off"
-                />
-              </div>
-
-              {error && (
-                <p role="alert" className="mt-4 rounded-xl border border-wine/50 bg-wine/20 px-4 py-3 text-sm font-light text-rose">
-                  {error}
+            <div className="mt-6">
+              <label htmlFor="final-message" className="mb-1.5 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-rose/70">
+                <PenLine className="h-3 w-3" aria-hidden />
+                Or simply write what you want to
+              </label>
+              <textarea
+                id="final-message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value.slice(0, messageMaxLength))}
+                maxLength={messageMaxLength}
+                rows={6}
+                placeholder="Type anything here — in your own words. You don't have to choose any option first."
+                className="w-full resize-y rounded-2xl border border-rose/20 bg-midnight/70 px-4 py-3.5 text-base font-light leading-relaxed text-ivory placeholder:text-ivory/30 focus:border-champagne/50 focus:outline-none"
+              />
+              <div className="mt-2 flex items-center justify-between">
+                <p aria-hidden className="text-[11px] uppercase tracking-[0.25em] text-ivory/35">
+                  {choice ? options.find((o) => o.value === choice)?.label : "Just words — no option needed"}
                 </p>
-              )}
+                <p className="text-[11px] tabular-nums text-ivory/35">
+                  {message.length}/{messageMaxLength}
+                </p>
+              </div>
+            </div>
 
-              <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                <button
-                  type="button"
-                  onClick={() => submit(true)}
-                  disabled={phase === "sending"}
-                  className="inline-flex min-w-[13rem] items-center justify-center gap-2.5 rounded-full border border-champagne/40 bg-gradient-to-r from-wine via-[#4a1428] to-wine px-8 py-3.5 text-sm uppercase tracking-[0.18em] text-ivory transition-all duration-300 hover:shadow-[0_20px_60px_-20px_rgba(220,167,181,0.4)] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {phase === "sending" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                  ) : (
-                    <Send className="h-4 w-4" aria-hidden />
-                  )}
-                  {phase === "sending" ? "Sending…" : sendLabel}
-                </button>
+            {/* Honeypot — visually removed, ignored by humans, traps bots */}
+            <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+              <label htmlFor={HONEYPOT_FIELD}>Leave this field empty</label>
+              <input
+                id={HONEYPOT_FIELD}
+                type="text"
+                name={HONEYPOT_FIELD}
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+
+            {error && (
+              <p role="alert" className="mt-4 rounded-xl border border-wine/50 bg-wine/20 px-4 py-3 text-sm font-light text-rose">
+                {error}
+              </p>
+            )}
+
+            <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={() => submit(true)}
+                disabled={phase === "sending" || !canSend}
+                className="inline-flex min-w-[13rem] items-center justify-center gap-2.5 rounded-full border border-champagne/40 bg-gradient-to-r from-wine via-[#4a1428] to-wine px-8 py-3.5 text-sm uppercase tracking-[0.18em] text-ivory transition-all duration-300 hover:shadow-[0_20px_60px_-20px_rgba(220,167,181,0.4)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {phase === "sending" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Send className="h-4 w-4" aria-hidden />
+                )}
+                {phase === "sending" ? "Sending…" : sendLabel}
+              </button>
+              {canSkip && (
                 <button
                   type="button"
                   onClick={() => submit(false)}
@@ -279,14 +290,16 @@ export function FinalQuestionScene() {
                   <SkipForward className="h-3.5 w-3.5" aria-hidden />
                   {skipMessageLabel}
                 </button>
-              </div>
+              )}
+            </div>
 
+            {!canSend && (
               <p className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] font-light tracking-wide text-ivory/35">
                 <Sparkles className="h-3 w-3" aria-hidden />
-                Whatever you choose here — it will be heard, once, honestly.
+                Choose an option above, write below, or do both — whatever feels right.
               </p>
-            </motion.div>
-          ) : null}
+            )}
+          </motion.div>
         </div>
       )}
     </section>

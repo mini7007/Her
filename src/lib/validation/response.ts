@@ -3,7 +3,7 @@
  * the API route (server-side enforcement) and the final scene form (UX hints).
  */
 
-export const RESPONSE_VALUES = ["yes", "time", "talk", "no"] as const;
+export const RESPONSE_VALUES = ["yes", "time", "talk", "no", "message"] as const;
 export type ResponseValue = (typeof RESPONSE_VALUES)[number];
 
 export const MESSAGE_MAX_LENGTH = 3000;
@@ -41,6 +41,14 @@ export function parseSubmission(body: unknown): ParseResult {
     return { ok: false, error: "Please choose one of the available responses." };
   }
 
+  // A free-written message needs words; everything else may send without one.
+  if (record.response === "message") {
+    const hasText = typeof record.message === "string" && record.message.trim().length > 0;
+    if (!hasText) {
+      return { ok: false, error: "Please write a few words from your heart — or choose one of the four options instead." };
+    }
+  }
+
   let message: string | null = null;
   if (typeof record.message === "string" && record.message.trim().length > 0) {
     message = record.message.trim();
@@ -70,4 +78,5 @@ export const RESPONSE_LABELS: Record<ResponseValue, string> = {
   time: "She needs some time to think",
   talk: "She wants to talk first",
   no: "She doesn't think she can continue",
+  message: "She wrote something from her heart",
 };

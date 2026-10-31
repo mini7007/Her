@@ -14,6 +14,7 @@ const BADGE_STYLES: Record<ResponseValue, string> = {
   time: "border-rose/40 bg-rose/10 text-rose",
   talk: "border-ivory/30 bg-ivory/10 text-ivory/90",
   no: "border-wine/60 bg-wine/25 text-rose",
+  message: "border-rose/40 bg-rose/15 text-ivory",
 };
 
 /** One submission card on the owner dashboard. */

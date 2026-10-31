@@ -278,7 +278,7 @@ export const relationship: RelationshipContent = {
 
   music: {
     heading: "Our Songs",
-    subtitle: "Three songs that live in this story. Press play only if you want to.",
+    subtitle: "",
     defaultVolume: 0.35,
     tracks: [
       {
@@ -350,8 +350,30 @@ export const relationship: RelationshipContent = {
       time: "Thank you for being honest with me. I will respect what you have shared. Your feelings matter, and I appreciate you taking the time to read this. Take all the time you need — I will be here, patiently.",
       talk: "Thank you for being honest with me. I will respect what you have shared. Your feelings matter, and I appreciate you taking the time to read this. Whenever you're ready to talk, I will listen.",
       no: "Thank you for being honest with me. I will respect what you have shared, completely. Your feelings matter, and I appreciate you taking the time to read this. I will not pressure you — your decision is heard, and it is respected.",
+      message: "Thank you for writing to me. I will read every word you wrote. Your feelings matter, and I appreciate you taking the time to read this.",
     },
   },
+
+  /**
+   * Soft handwritten thoughts that drift across the screen on every scene —
+   * quiet, faint, never in the way. Edit freely; keep them short.
+   */
+  whispers: [
+    "I'm sorry, Bacha…",
+    "You deserved to be heard.",
+    "I wish I had listened.",
+    "I miss the little things.",
+    "I miss your laugh.",
+    "You made ordinary days feel special.",
+    "I still choose you.",
+    "Let me love you better.",
+    "I'm learning from my mistakes.",
+    "I want to understand you.",
+    "Can we write a better chapter?",
+    "One more chance, Bacha?",
+    "Let's start all over again — slowly.",
+    "Thank you for reading this far…",
+  ],
 
   notification: {
     subject: "Bacha has responded to your letter ❤️",

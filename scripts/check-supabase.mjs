@@ -67,6 +67,16 @@ if (process.argv.includes("--cleanup")) {
     }
     console.log("Cleanup: test row(s) deleted — dashboard is empty again.");
   }
+
+  // Also sweep any rows marked as verification tests by their message text.
+  const { data: marked, error: markedError } = await supabase
+    .from("relationship_responses")
+    .delete()
+    .like("message", "TEST (Mohan):%")
+    .select("id");
+  if (!markedError) {
+    console.log(`Cleanup: ${marked?.length ?? 0} marked test row(s) deleted.`);
+  }
   const { error: rlDel } = await supabase
     .from("response_rate_limits")
     .delete()
