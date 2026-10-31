@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --color-midnight: #09070b;
+  --color-burgundy: #300d20;
+  --color-wine: #651b35;
+  --color-rose: #dca7b5;
+  --color-champagne: #e8d6b5;
+  --color-ivory: #fff5ed;
+}
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+  min-height: 100dvh;
+  background-color: var(--color-midnight);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(220, 167, 181, 0.35);
+  color: #fff5ed;
+}
+
+/* Slim, on-palette scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(101, 27, 53, 0.8) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(101, 27, 53, 0.7);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Elegant, visible focus for keyboard users */
+:focus-visible {
+  outline: 2px solid rgba(232, 214, 181, 0.7);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Respect visitors who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes iychm-rain-fall {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -60px 640px;
+  }
+}
+
+@layer utilities {
+  /* Soft champagne text glow for scene titles */
+  .text-glow {
+    text-shadow:
+      0 0 24px rgba(232, 214, 181, 0.22),
+      0 0 70px rgba(220, 167, 181, 0.14);
+  }
+
+  /* Aged paper for the love letter */
+  .paper {
+    background:
+      radial-gradient(120% 100% at 30% 0%, rgba(255, 245, 237, 0.99) 0%, rgba(247, 233, 221, 0.98) 60%, rgba(243, 226, 214, 0.98) 100%);
+  }
+
+  /* Faint ruled lines inside the paper */
+  .paper-lines {
+    background-image: repeating-linear-gradient(
+      180deg,
+      transparent 0 34px,
+      rgba(101, 27, 53, 0.055) 34px 35px
+    );
+  }
+
+  /* Cinematic rainy window glass (Scene 04) */
+  .rain-window {
+    background-image:
+      repeating-linear-gradient(
+        97deg,
+        rgba(255, 245, 237, 0) 0 5px,
+        rgba(255, 245, 237, 0.05) 5px 6px,
+        rgba(255, 245, 237, 0) 6px 11px
+      ),
+      repeating-linear-gradient(
+        93deg,
+        rgba(220, 167, 181, 0) 0 17px,
+        rgba(220, 167, 181, 0.045) 17px 18px,
+        rgba(220, 167, 181, 0) 18px 30px
+      );
+    animation: iychm-rain-fall 1.5s linear infinite;
+  }
+
+  /* Safe-area padding for notched phones */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
