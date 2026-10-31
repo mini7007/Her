@@ -114,11 +114,15 @@ export interface RelationshipContent {
     subtitle: string;
     tracks: Track[];
     defaultVolume: number;
+    /** Track id that begins playing the moment she lands. */
+    autoStartTrackId: string;
   };
   final: {
     heading: string;
     paragraphs: string[];
     question: string;
+    /** A single quiet plea, rendered in handwriting before the question. */
+    plea: string;
     options: ResponseOption[];
     messagePrompt: string;
     messageMaxLength: number;

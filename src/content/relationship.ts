@@ -280,6 +280,8 @@ export const relationship: RelationshipContent = {
     heading: "Our Songs",
     subtitle: "",
     defaultVolume: 0.35,
+    // The song that plays the moment she lands on the page.
+    autoStartTrackId: "faasle",
     tracks: [
       {
         id: "khat",
@@ -345,6 +347,8 @@ export const relationship: RelationshipContent = {
       "Your feelings matter, and I appreciate you taking the time to read this.",
     ],
     writeMoreLabel: "I would like to share something more",
+    plea:
+      "Bacha, one request from my heart — please give me one last chance. I will do whatever it takes to get you back, to get us back. Everything I have, everything I am. All I need is one last chance to start all over again.",
     acknowledgementByResponse: {
       yes: "Thank you for being honest with me. I will respect what you have shared. Your feelings matter, and I appreciate you taking the time to read this.",
       time: "Thank you for being honest with me. I will respect what you have shared. Your feelings matter, and I appreciate you taking the time to read this. Take all the time you need — I will be here, patiently.",

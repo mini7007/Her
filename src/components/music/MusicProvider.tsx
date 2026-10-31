@@ -71,7 +71,13 @@ const defaultVolume = relationship.music.defaultVolume;
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // The song she hears first — configurable by id in the content file.
+  const autoStartIndex = Math.max(
+    0,
+    tracks.findIndex((t) => t.id === relationship.music.autoStartTrackId)
+  );
+
+  const [currentIndex, setCurrentIndex] = useState(autoStartIndex);
   const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [volume, setVolumeState] = useState(defaultVolume);

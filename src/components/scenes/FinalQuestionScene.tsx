@@ -30,7 +30,7 @@ interface SubmitResult {
 
 export function FinalQuestionScene() {
   const reduced = useReducedMotion();
-  const { heading, paragraphs, question, options, messagePrompt, messageMaxLength, sendLabel, skipMessageLabel, thankYou, writeMoreLabel, acknowledgementByResponse } =
+  const { heading, paragraphs, question, plea, options, messagePrompt, messageMaxLength, sendLabel, skipMessageLabel, thankYou, writeMoreLabel, acknowledgementByResponse } =
     relationship.final;
 
   const [phase, setPhase] = useState<Phase>("composing");
@@ -140,6 +140,16 @@ export function FinalQuestionScene() {
           </motion.p>
         ))}
       </div>
+
+      {/* His one request, in his own handwriting */}
+      {plea && (
+        <motion.p
+          {...appear(0.35)}
+          className="mx-auto max-w-md text-center font-hand text-2xl leading-relaxed text-rose/90 sm:text-[1.7rem]"
+        >
+          {plea}
+        </motion.p>
+      )}
 
       {/* THE question */}
       <motion.div
